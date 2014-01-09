@@ -1,8 +1,7 @@
 Check Puppet Syntax
 ===================
 
-Python tool for checking Puppet .pp and .erb file syntax using Puppet's built-in ```puppet parser validate``` and
-Ruby's ```erb | ruby``.
+Multiprocessing Python tool for quickly checking Puppet .pp and .erb file syntax using Puppet's built-in ```puppet parser validate``` and Ruby's ```erb | ruby```.
 
 ```
 usage: check_puppet_syntax.py [-h] [-f FILE] [-d DIRECTORY]
