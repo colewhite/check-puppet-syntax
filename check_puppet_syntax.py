@@ -39,6 +39,13 @@ def parse_erb(filepath):
     errors.append(process.stderr.read())
     return errors
 
+def parse_yaml(filepath):
+    errors = []
+    process = subprocess.Popen(
+        ['ruby -e \"require \'yaml\'; YAML.parse(File.open(\'{}\'))\";'.format(filepath)], shell=True, stderr=subprocess.PIPE)
+    errors.append(filepath + ':\n')
+    errors.append(process.stderr.read())
+    return errors
 
 def directory_check(rootdir, suffix):
     errors = []
@@ -49,6 +56,8 @@ def directory_check(rootdir, suffix):
             items = pool.map(parse_pp, files)
         elif 'erb' in suffix:
             items = pool.map(parse_erb, files)
+        elif 'yaml' in suffix:
+            items = pool.map(parse_yaml, files)
         for error in items:
             if error[1] != '':
                 errors.append(error[0] + error[1])
@@ -72,28 +81,47 @@ def colorize(message):
     else:
         return message
 
+
 def error_counter(message):
     if 'Warning:' in message:
         return 0
     elif 'Error:' in message:
-        return 1
+        if 'spec' in message:
+            return 0
+        else:
+            return 1
     elif 'syntax error' in message:
-        return 1
+        if 'spec' in message:
+            return 0
+        else:
+            return 1
+    elif 'Syntax error' in message:
+        if 'spec' in message:
+            return 0
+        else:
+            return 1
     else:
         return 0
 
 
 class FileCheck(argparse.Action):
-    def __call__(self, parser, namespace, value, option_string=None):
+    def __call__(self, parser, namespace, values, option_string=None):
         counter = 0
-        if value.endswith('.pp'):
-            for item in parse_pp(value):
+        if values.endswith('.pp'):
+            for item in parse_pp(values):
                 print colorize(item)
                 counter += error_counter(item)
-        elif value.endswith('.erb'):
-            for item in parse_erb(value):
+        elif values.endswith('.erb'):
+            for item in parse_erb(values):
                 print colorize(item)
                 counter += error_counter(item)
+        elif values.endswith('.yaml'):
+            for item in parse_yaml(values):
+                print colorize(item)
+                counter += error_counter(item)
+        else:
+            print 'File is not .pp, .erb, or .yaml.'
+            exit(1)
         if counter == 0:
             exit(0)
         else:
@@ -101,24 +129,30 @@ class FileCheck(argparse.Action):
 
 
 class DirectoryCheck(argparse.Action):
-    def __call__(self, parser, namespace, value, option_string=None):
+    def __call__(self, parser, namespace, values, option_string=None):
         counter = 0
         print 'Puppet File Messages:'
-        for item in directory_check(value, '.pp'):
+        for item in directory_check(values, '.pp'):
             print colorize(item)
             counter += error_counter(item)
 
         print 'Template File Messages:'
-        for item in directory_check(value, '.erb'):
+        for item in directory_check(values, '.erb'):
             print colorize(item)
             counter += error_counter(item)
+
+        print 'YAML File Messages:'
+        for item in directory_check(values, '.yaml'):
+            print colorize(item)
+            counter += error_counter(item)
+
         if counter == 0:
             exit(0)
         else:
             exit(1)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Puppet .pp and .erb syntax checker.')
+    parser = argparse.ArgumentParser(description='Puppet .pp, .erb, and .yaml syntax checker.')
     parser.add_argument('-f', '--file', help='File to be checked.', action=FileCheck)
     parser.add_argument('-d', '--directory', help='Directory to be checked. (Recursive)', action=DirectoryCheck)
     args = parser.parse_args()
