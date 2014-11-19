@@ -1,12 +1,12 @@
 Check Puppet Syntax
 ===================
 
-Multiprocessing Python tool for quickly checking Puppet .pp and .erb file syntax using Puppet's built-in ```puppet parser validate``` and Ruby's ```erb | ruby```.
+Multiprocessing Python tool for quickly checking Puppet .pp, .erb, and yaml file syntax using Puppet's built-in ```puppet parser validate``` and Ruby's ```erb | ruby```.
 
 ```
 usage: check_puppet_syntax.py [-h] [-f FILE] [-d DIRECTORY]
 
-Puppet .pp and .erb syntax checker.
+Puppet .pp, .erb, and .yaml syntax checker.
 
 optional arguments:
   -h, --help            show this help message and exit
