@@ -34,7 +34,7 @@ def parse_pp(filepath):
 def parse_erb(filepath):
     errors = []
     process = subprocess.Popen(
-        ['cat {} | erb -x -T - | ruby -c > /dev/null'.format(filepath)], shell=True, stderr=subprocess.PIPE)
+        ['cat {} | erb -P -x -T - | ruby -c > /dev/null'.format(filepath)], shell=True, stderr=subprocess.PIPE)
     errors.append(filepath + ':\n')
     errors.append(process.stderr.read())
     return errors
